@@ -1,14 +1,12 @@
 <div align="center">
   <img src="https://pan.samyyc.dev/s/VYmMXE" />
-  <h2><strong>New Plugin Template</strong></h2>
-  <h3>New Plugin Template</h3>
+  <h2><strong>SLAYER_Duel</strong></h2>
+  <h3>SLAYER_Duel</h3>
 </div>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="Build Status">
-  <img src="https://img.shields.io/github/downloads/SLAYER/New_Plugin_Template/total" alt="Downloads">
-  <img src="https://img.shields.io/github/stars/SLAYER/New_Plugin_Template?style=flat&logo=github" alt="Stars">
-  <img src="https://img.shields.io/github/license/SLAYER/New_Plugin_Template" alt="License">
+  <img src="https://img.shields.io/github/downloads/zakriamansoor47/SW_SLAYER_Duel/total" alt="Downloads">
+  <img src="https://img.shields.io/github/stars/zakriamansoor47/SW_SLAYER_Duel?style=flat&logo=github" alt="Stars">
 </p>
 
 # Accepting Paid Request! Discord: Slayer47#7002
@@ -67,11 +65,9 @@ This Plugin allows Players to do **1vs1 Duel**. This plugin has many features. T
 
 **19.** Players can set their Duel Vote Choice by `!duel` command
 
-**20.** Supports **KitsuneMenu (WASD Menu)**
+**20.** Duel Stats
 
-**21.** Duel Stats
-
-**22.** And much more.
+**21.** And much more.
 
 
 ## Commands:
@@ -84,7 +80,6 @@ This Plugin allows Players to do **1vs1 Duel**. This plugin has many features. T
 {
   "PluginEnabled": true,          		// Enable/Disable Plugin
   "Duel_ForceStart": false,       		// Force Start Duel? (true = Yes, false = Vote for Duel)
-  "Duel_ShowMenuAt": 3,  		  		// Location of Duel Voting Menu? (1 = Chat, 2 = Center Html, 3 = Center WASD Menu)
   "Duel_ShowDuelCounterIn": 1,  		// Location of Duel Start Counter? (1 = Center HTML, 2 = Center Alert)
   "Duel_TopPlayersCount": 10,			// Show how many top players in the !duel menu
   "Duel_FreezePlayerOnMenuShown": true, // FreezePlayerOnMenuShown? (true = Freeze, false = Don't Freeze)

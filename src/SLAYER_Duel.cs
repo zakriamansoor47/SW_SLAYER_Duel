@@ -68,7 +68,7 @@ public class DuelModeSettings
 
 [PluginMetadata
 (
-    Id = "SLAYER_Duel", 
+    Id = "zakriamansoor47", 
     Version = "1.0", 
     Name = "SLAYER_Duel", 
     Author = "SLAYER", 
