@@ -5,8 +5,8 @@
 </div>
 
 <p align="center">
-  <img src="https://img.shields.io/github/Downloads/zakriamansoor47/Swiftly_SLAYER_Duel/total" alt="Downloads">
-  <img src="https://img.shields.io/github/Stars/zakriamansoor47/Swiftly_SLAYER_Duel?style=flat&logo=github" alt="Stars">
+  <img src="https://img.shields.io/github/downloads/zakriamansoor47/Swiftly_SLAYER_Duel/total" alt="Downloads">
+  <img src="https://img.shields.io/github/stars/zakriamansoor47/Swiftly_SLAYER_Duel?style=flat&logo=github" alt="Stars">
 </p>
 
 # Accepting Paid Request! Discord: Slayer47#7002
