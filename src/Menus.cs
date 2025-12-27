@@ -13,10 +13,11 @@ public partial class SLAYER_Duel : BasePlugin
         if (player == null || !player.IsValid || !Config.PluginEnabled) return;
 
         // Create menu
-        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(true)
+        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(false)
         .Design.SetMenuTitle($"{Localizer["MenuSettings.Title"]}")
         .Design.SetGlobalScrollStyle(MenuOptionScrollStyle.CenterFixed)
         .Build();
+        settingsMenu.DefaultComment = ""; // Clear default comment
         
         // Player Duel Rank
         var RankOption = new ButtonMenuOption($"{Localizer["PlayerMenu.Rank"]}");
@@ -49,7 +50,7 @@ public partial class SLAYER_Duel : BasePlugin
         int played = (stats?.Wins ?? 0) + (stats?.Losses ?? 0);
 
         // Create menu
-        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(true)
+        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(false)
         .Design.SetMenuTitle($"{Localizer["PlayerMenu.RankTitle"]}")
         .Design.SetGlobalScrollStyle(MenuOptionScrollStyle.CenterFixed)
         .BindToParent(parentMenu)
@@ -83,11 +84,12 @@ public partial class SLAYER_Duel : BasePlugin
         if (player == null || !player.IsValid || !Config.PluginEnabled) return;
 
         // Create menu
-        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(true)
+        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(false)
         .Design.SetMenuTitle($"<font color='lime'>{Localizer["PlayerMenu.TopPlayers"]}</font>")
         .Design.SetGlobalScrollStyle(MenuOptionScrollStyle.CenterFixed)
         .BindToParent(parentMenu)
         .Build();
+        settingsMenu.DefaultComment = ""; // Clear default comment
 
         GetTopPlayersSettings(Config.Duel_TopPlayersCount, (topPlayers) =>
         {
@@ -101,13 +103,13 @@ public partial class SLAYER_Duel : BasePlugin
                     // Show player stats for the selected player (using playerSettings from the loop)
                     int totalPlayed = playerSettings.Wins + playerSettings.Losses;
                     double winRate = totalPlayed > 0 ? (double)playerSettings.Wins / totalPlayed * 100 : 0;
-                    args.Player.SendChat($"{Localizer["Chat.Stats.HeaderFooter"]}");
-                    args.Player.SendChat($"{Localizer["Chat.Stats.Name", playerSettings.PlayerName]}");
-                    args.Player.SendChat($"{Localizer["Chat.Stats.Played", totalPlayed]}");
-                    args.Player.SendChat($"{Localizer["Chat.Stats.Wins", playerSettings.Wins]}");
-                    args.Player.SendChat($"{Localizer["Chat.Stats.Losses", playerSettings.Losses]}");
-                    args.Player.SendChat($"{Localizer["Chat.Stats.WinRate", $"{winRate:F2}%"]}");
-                    args.Player.SendChat($"{Localizer["Chat.Stats.HeaderFooter"]}");
+                    args.Player.SendChatAsync($"{Localizer["Chat.Stats.HeaderFooter"]}");
+                    args.Player.SendChatAsync($"{Localizer["Chat.Stats.Name", playerSettings.PlayerName]}");
+                    args.Player.SendChatAsync($"{Localizer["Chat.Stats.Played", totalPlayed]}");
+                    args.Player.SendChatAsync($"{Localizer["Chat.Stats.Wins", playerSettings.Wins]}");
+                    args.Player.SendChatAsync($"{Localizer["Chat.Stats.Losses", playerSettings.Losses]}");
+                    args.Player.SendChatAsync($"{Localizer["Chat.Stats.WinRate", $"{winRate:F2}%"]}");
+                    args.Player.SendChatAsync($"{Localizer["Chat.Stats.HeaderFooter"]}");
                     return ValueTask.CompletedTask;
                 };
                 settingsMenu.AddOption(playerOption);
@@ -129,36 +131,38 @@ public partial class SLAYER_Duel : BasePlugin
         if(PlayerOption?.ContainsKey(player) == true && PlayerOption[player].Option == -1){SelectedOption = $"{Localizer["PlayerMenu.Vote"]}";}
 
         // Create menu
-        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(true)
+        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(false)
         .Design.SetMenuTitle($"{Localizer["MenuSettings.Title"]}")
         .Design.SetGlobalScrollStyle(MenuOptionScrollStyle.CenterFixed)
         .BindToParent(parentMenu)
         .Build();
+        settingsMenu.DefaultComment = ""; // Clear default comment
 
         // Show current vote option
         var currentOption = new ButtonMenuOption($"{Localizer["PlayerMenu.Selected"]}: {SelectedOption}");
         currentOption.Enabled = false;
+        settingsMenu.AddOption(currentOption);
 
         // Ask for vote
         var voteOption = new ButtonMenuOption($"{Localizer["PlayerMenu.Vote"]}");
         voteOption.Click += (sender, args) =>
         {
             if(PlayerOption?.ContainsKey(player) == true) PlayerOption[player].Option = -1;
-            SetPlayerDuelOption(player, -1);
-            player.SendChat($"{Localizer["Chat.Prefix"]}  {Localizer["Chat.DuelSettings.Vote"]}");
+            player.SendChatAsync($"{Localizer["Chat.Prefix"]}  {Localizer["Chat.DuelSettings.Vote"]}");
             currentOption.Text = $"{Localizer["PlayerMenu.Selected"]}: {Localizer["PlayerMenu.Vote"]}";
+            SetPlayerDuelOption(player, -1);
             return ValueTask.CompletedTask;
         };
-        settingsMenu.AddOption(currentOption);
+        settingsMenu.AddOption(voteOption);
 
         // always Accept
         var acceptOption = new ButtonMenuOption($"{Localizer["PlayerMenu.Accept"]}");
         acceptOption.Click += (sender, args) =>
         {
             if(PlayerOption?.ContainsKey(player) == true) PlayerOption[player].Option = 1;
-            SetPlayerDuelOption(player, 1);
-            player.SendChat($"{Localizer["Chat.Prefix"]}  {Localizer["Chat.DuelSettings.Accept"]}");
+            player.SendChatAsync($"{Localizer["Chat.Prefix"]}  {Localizer["Chat.DuelSettings.Accept"]}");
             currentOption.Text = $"{Localizer["PlayerMenu.Selected"]}: {Localizer["PlayerMenu.Accept"]}";
+            SetPlayerDuelOption(player, 1);
             return ValueTask.CompletedTask;
         };
         settingsMenu.AddOption(acceptOption);
@@ -168,9 +172,9 @@ public partial class SLAYER_Duel : BasePlugin
         declineOption.Click += (sender, args) =>
         {
             if(PlayerOption?.ContainsKey(player) == true) PlayerOption[player].Option = 0;
-            SetPlayerDuelOption(player, 0);
-            player.SendChat($"{Localizer["Chat.Prefix"]}  {Localizer["Chat.DuelSettings.Decline"]}");
+            player.SendChatAsync($"{Localizer["Chat.Prefix"]}  {Localizer["Chat.DuelSettings.Decline"]}");
             currentOption.Text = $"{Localizer["PlayerMenu.Selected"]}: {Localizer["PlayerMenu.Decline"]}";
+            SetPlayerDuelOption(player, 0);
             return ValueTask.CompletedTask;
         };
         settingsMenu.AddOption(declineOption);
@@ -182,10 +186,11 @@ public partial class SLAYER_Duel : BasePlugin
         if (player == null || !player.IsValid || !Config.PluginEnabled || player.PlayerPawn == null) return;
 
         // Create menu
-        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(true)
+        var settingsMenu = Core.MenusAPI.CreateBuilder().EnableExit().EnableSound().SetPlayerFrozen(false)
         .Design.SetMenuTitle($"{Localizer["MenuSettings.Title"]}")
         .Design.SetGlobalScrollStyle(MenuOptionScrollStyle.CenterFixed)
         .Build();
+        settingsMenu.DefaultComment = ""; // Clear default comment
 
         // Set T Position
         var TeleportSetT = new ButtonMenuOption($"{Localizer["MenuSettings.TeleportSetT"]}");
@@ -194,16 +199,16 @@ public partial class SLAYER_Duel : BasePlugin
             if (Duel_Positions.ContainsKey(Core.Engine.GlobalVars.MapName)) // Check If Map already exist in JSON file
             {
                 Dictionary<string, string> MapData = Duel_Positions[Core.Engine.GlobalVars.MapName]; // Get Map Settings
-                MapData["T_Pos"] = $"{player.PlayerPawn.AbsOrigin}"; // Edit t_pos value
+                MapData["T_Pos"] = $"{player.PlayerPawn.AbsOrigin!.Value.X} {player.PlayerPawn.AbsOrigin!.Value.Y} {player.PlayerPawn.AbsOrigin!.Value.Z};{player.PlayerPawn.AbsRotation!.Value.Pitch} {player.PlayerPawn.AbsRotation!.Value.Yaw} {player.PlayerPawn.AbsRotation!.Value.Roll}"; // Edit t_pos value
                 File.WriteAllText(GetMapTeleportPositionConfigPath(), JsonSerializer.Serialize(Duel_Positions));
             }
             else // If Map not found in JSON file
             {
                 // Save/add this in Global Variable
-                Duel_Positions.Add(Core.Engine.GlobalVars.MapName, new Dictionary<string, string>{{"T_Pos", $"{player.PlayerPawn.AbsOrigin}"}, {"CT_Pos", ""}});
+                Duel_Positions.Add(Core.Engine.GlobalVars.MapName, new Dictionary<string, string>{{"T_Pos", $"{player.PlayerPawn.AbsOrigin!.Value.X} {player.PlayerPawn.AbsOrigin!.Value.Y} {player.PlayerPawn.AbsOrigin!.Value.Z};{player.PlayerPawn.AbsRotation!.Value.Pitch} {player.PlayerPawn.AbsRotation!.Value.Yaw} {player.PlayerPawn.AbsRotation!.Value.Roll}"} , {"CT_Pos", ""}});
                 File.WriteAllText(GetMapTeleportPositionConfigPath(), JsonSerializer.Serialize(Duel_Positions)); // Saving Position in File
             }
-            player.SendChat($"{Localizer["Chat.Prefix"]}  {Localizer["Chat.DuelSettings.TeleportSetT", player.PlayerPawn.AbsOrigin!]}");
+            player.SendChatAsync($"{Localizer["Chat.Prefix"]}  {Localizer["Chat.DuelSettings.TeleportSetT", $"{player.PlayerPawn.AbsOrigin!.Value.X} {player.PlayerPawn.AbsOrigin!.Value.Y} {player.PlayerPawn.AbsOrigin!.Value.Z}"]}");
             return ValueTask.CompletedTask;
         };
         settingsMenu.AddOption(TeleportSetT);
@@ -215,16 +220,16 @@ public partial class SLAYER_Duel : BasePlugin
             if (Duel_Positions.ContainsKey(Core.Engine.GlobalVars.MapName)) // Check If Map already exist in JSON file
             {
                 Dictionary<string, string> MapData = Duel_Positions[Core.Engine.GlobalVars.MapName]; // Get Map Settings
-                MapData["CT_Pos"] = $"{player.PlayerPawn.AbsOrigin}"; // Edit ct_pos value
+                MapData["CT_Pos"] = $"{player.PlayerPawn.AbsOrigin!.Value.X} {player.PlayerPawn.AbsOrigin!.Value.Y} {player.PlayerPawn.AbsOrigin!.Value.Z};{player.PlayerPawn.AbsRotation!.Value.Pitch} {player.PlayerPawn.AbsRotation!.Value.Yaw} {player.PlayerPawn.AbsRotation!.Value.Roll}"; // Edit ct_pos value
                 File.WriteAllText(GetMapTeleportPositionConfigPath(), JsonSerializer.Serialize(Duel_Positions));
             }
             else // If Map not found in JSON file
             {
-                // Save/add this in Global Veriable
-                Duel_Positions.Add(Core.Engine.GlobalVars.MapName, new Dictionary<string, string>{{"T_Pos", ""}, {"CT_Pos", $"{player.PlayerPawn.AbsOrigin}"}});
+                // Save/add this in Global Variable
+                Duel_Positions.Add(Core.Engine.GlobalVars.MapName, new Dictionary<string, string>{{"T_Pos", ""}, {"CT_Pos", $"{player.PlayerPawn.AbsOrigin!.Value.X} {player.PlayerPawn.AbsOrigin!.Value.Y} {player.PlayerPawn.AbsOrigin!.Value.Z};{player.PlayerPawn.AbsRotation!.Value.Pitch} {player.PlayerPawn.AbsRotation!.Value.Yaw} {player.PlayerPawn.AbsRotation!.Value.Roll}"}});
                 File.WriteAllText(GetMapTeleportPositionConfigPath(), JsonSerializer.Serialize(Duel_Positions)); // Saving Position in File
             }
-            player.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.DuelSettings.TeleportSetCT", player.PlayerPawn.AbsOrigin!]}");
+            player.SendChatAsync($"{Localizer["Chat.Prefix"]} {Localizer["Chat.DuelSettings.TeleportSetCT", $"{player.PlayerPawn.AbsOrigin!.Value.X} {player.PlayerPawn.AbsOrigin!.Value.Y} {player.PlayerPawn.AbsOrigin!.Value.Z}"]}");
             return ValueTask.CompletedTask;
         };
         settingsMenu.AddOption(TeleportSetCT);
@@ -238,7 +243,7 @@ public partial class SLAYER_Duel : BasePlugin
                 Duel_Positions.Remove(Core.Engine.GlobalVars.MapName); // Delete Map Settings
                 File.WriteAllText(GetMapTeleportPositionConfigPath(), JsonSerializer.Serialize(Duel_Positions)); // Update File
             }
-            player.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.DuelSettings.TeleportDelete"]}");
+            player.SendChatAsync($"{Localizer["Chat.Prefix"]} {Localizer["Chat.DuelSettings.TeleportDelete"]}");
             return ValueTask.CompletedTask;
         };
         settingsMenu.AddOption(TeleportDelete);
@@ -254,12 +259,14 @@ public partial class SLAYER_Duel : BasePlugin
         .Design.SetMenuTitle($"{Localizer["Menu.Title"]}</font>")
         .Design.SetGlobalScrollStyle(MenuOptionScrollStyle.CenterFixed)
         .Build();
+        voteMenu.DefaultComment = ""; // Clear default comment
 
         // Accept Duel
         var acceptOption = new ButtonMenuOption($"{Localizer["Menu.Accept"]}");
         acceptOption.Click += (sender, args) =>
         {
             AcceptDuelVoteOption(args.Player);
+            Core.MenusAPI.CloseMenuForPlayer(args.Player, voteMenu);
             return ValueTask.CompletedTask;
         };
         voteMenu.AddOption(acceptOption);
@@ -269,6 +276,7 @@ public partial class SLAYER_Duel : BasePlugin
         declineOption.Click += (sender, args) =>
         {
             DeclineDuelVoteOption(args.Player);
+            Core.MenusAPI.CloseMenuForPlayer(args.Player, voteMenu);
             return ValueTask.CompletedTask;
         };
         voteMenu.AddOption(declineOption);

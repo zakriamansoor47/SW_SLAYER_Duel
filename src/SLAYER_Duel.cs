@@ -46,15 +46,18 @@ public class SLAYER_DuelConfig
     public bool Duel_FreezePlayers { get; set; } = false;
     public string Duel_DuelSoundPath { get; set; } = "";
     public string Duel_DatabaseConnection { get; set; } = "local"; // name from database.jsonc
-    public List<DuelModeSettings> Duel_Modes { get; set; } = new List<DuelModeSettings>();
+    public List<DuelModeSettings> Duel_Modes { get; set; } = new List<DuelModeSettings>
+    {
+        new DuelModeSettings()
+    };
 }
 public class DuelModeSettings
 {
-    public bool BulletTracers { get; set; } = true;
-    public string Name { get; set; } = "";
+    public bool BulletTracers { get; set; } = false;
+    public string Name { get; set; } = "Knife Only + Bhop";
     public string Weapons { get; set; } = "weapon_knife";
-    public string CMD { get; set; } = "";
-    public string CMD_End { get; set; } = "";
+    public string CMD { get; set; } = "sv_autobunnyhopping 1";
+    public string CMD_End { get; set; } = "sv_autobunnyhopping 0";
     public int Health { get; set; } = 100;
     public int Armor { get; set; } = 0;
     public int Helmet { get; set; } = 0;
@@ -62,13 +65,13 @@ public class DuelModeSettings
     public float Gravity { get; set; } = 1.0f;
     public int InfiniteAmmo { get; set; } = 2;
     public bool NoZoom { get; set; } = false;
-    public bool Only_headshot { get; set; } = false;
+    public bool OnlyHeadshot { get; set; } = false;
     public bool DisableKnife { get; set; } = false;
 }
 
 [PluginMetadata
 (
-    Id = "zakriamansoor47", 
+    Id = "SLAYER_Duel", 
     Version = "1.0", 
     Name = "SLAYER_Duel", 
     Author = "SLAYER", 
@@ -79,7 +82,7 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
     // Use static Core to access across plugin files if not using partial class
     public static new ISwiftlyCore Core { get; private set; } = null!;
     private ServiceProvider? _provider;
-    private static SLAYER_DuelConfig Config { get; set; } = new();
+    private SLAYER_DuelConfig Config { get; set; } = new();
     private ILocalizer Localizer => core.Localizer;
     Dictionary<IPlayer, PlayerSettings> PlayerOption = new Dictionary<IPlayer, PlayerSettings>();
     Dictionary<string, List<string>> playerSavedWeapons = new Dictionary<string, List<string>>();
@@ -113,11 +116,15 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
     Dictionary<IPlayer, (int, bool)> PlayerArmorBeforeDuel = new Dictionary<IPlayer, (int, bool)>();
     public override void Load(bool hotReload) 
     {
+        // Ensure static Core is initialized before any usage.
+        // Swiftly injects the instance core via the primary constructor parameter `core`.
+        Core = core;
+
         // Initialize configuration
-        Core.Configuration.InitializeJsonWithModel<SLAYER_DuelConfig>("SLAYER_DuelConfig.jsonc", "Main")
+        Core.Configuration.InitializeJsonWithModel<SLAYER_DuelConfig>("SLAYER_Duel.jsonc", "Main")
         .Configure(builder =>
         {
-            builder.AddJsonFile("SLAYER_DuelConfig.jsonc", optional: false, reloadOnChange: true);
+            builder.AddJsonFile("SLAYER_Duel.jsonc", optional: false, reloadOnChange: true);
         });
 
         // Register configuration with dependency injection
@@ -176,7 +183,7 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
                         (
                             $"{Localizer["CenterHtml.DuelPrep"]}" +
                             $"{Localizer["CenterHtml.DuelPrepTime", g_PrepTime]}"
-                        );
+                        , 500);
                     }
                     else
                     {
@@ -195,7 +202,7 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
                         (
                             $"{Localizer["CenterHtml.DuelEnd"]}" +
                             $"{Localizer["CenterHtml.DuelEndTime", g_DuelTime]}"
-                        );
+                        , 500);
                     }
                     else
                     {
@@ -493,19 +500,19 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
         {
             if (Config.Duel_FreezePlayerOnMenuShown) UnFreezePlayer(player.Controller);
             PlayersDuelVoteOption[0] = true;
-            Core.PlayerManager.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.AcceptedDuel.T", player.Controller.PlayerName]}");
+            Core.PlayerManager.SendChatAsync($"{Localizer["Chat.Prefix"]} {Localizer["Chat.AcceptedDuel.T", player.Controller.PlayerName]}");
         }
         else if (player.Controller.TeamNum == 3)
         {
             if (Config.Duel_FreezePlayerOnMenuShown) UnFreezePlayer(player.Controller);
             PlayersDuelVoteOption[1] = true;
-            Core.PlayerManager.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.AcceptedDuel.CT", player.Controller.PlayerName]}");
+            Core.PlayerManager.SendChatAsync($"{Localizer["Chat.Prefix"]} {Localizer["Chat.AcceptedDuel.CT", player.Controller.PlayerName]}");
         }
 
         if (PlayersDuelVoteOption[0] && PlayersDuelVoteOption[1])
         {
             g_IsVoteStarted = false; // Both Accepted the Duel Vote, So no need to Exit Menu at Round End
-            Core.PlayerManager.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.AcceptedDuel.Both"]}");
+            Core.PlayerManager.SendChatAsync($"{Localizer["Chat.Prefix"]} {Localizer["Chat.AcceptedDuel.Both"]}");
             RemoveObjectives(); // Remove Objectives from Map
             Core.Scheduler.DelayBySeconds(0.1f, () => PrepDuel());
         }
@@ -518,18 +525,18 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
         {
             if(Config.Duel_FreezePlayerOnMenuShown)UnFreezePlayer(player.Controller);
             PlayersDuelVoteOption[0] = false;
-            Core.PlayerManager.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.RejectedDuel.T", player.Controller.PlayerName]}");
+            Core.PlayerManager.SendChatAsync($"{Localizer["Chat.Prefix"]} {Localizer["Chat.RejectedDuel.T", player.Controller.PlayerName]}");
         }
         else if(player.Controller.TeamNum == 3)
         {
             if(Config.Duel_FreezePlayerOnMenuShown)UnFreezePlayer(player.Controller);
             PlayersDuelVoteOption[1] = false;
-            Core.PlayerManager.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.RejectedDuel.CT", player.Controller.PlayerName]}");
+            Core.PlayerManager.SendChatAsync($"{Localizer["Chat.Prefix"]} {Localizer["Chat.RejectedDuel.CT", player.Controller.PlayerName]}");
         }
         if(!PlayersDuelVoteOption[0] && !PlayersDuelVoteOption[1])
         {
             g_IsVoteStarted = false; // Both Rejected the Duel Vote, So no need to Exit Menu at Round End
-            Core.PlayerManager.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.RejectedDuel.Both"]}");
+            Core.PlayerManager.SendChatAsync($"{Localizer["Chat.Prefix"]} {Localizer["Chat.RejectedDuel.Both"]}");
         }
     }
     public void RemoveAllWeaponsFromMap()
@@ -607,9 +614,9 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
             {
                 var SelectedModeName = Config.Duel_Modes.ElementAt(SelectedMode);
                 SelectedDuelModeName = SelectedModeName.Name;
-                Core.PlayerManager.SendChat($" {Color.FromBuiltin(System.Drawing.Color.Green)}★ {Color.FromBuiltin(System.Drawing.Color.DarkRed)}-----------------------------------------------------------------------");
+                Core.PlayerManager.SendChat($"{Helper.ChatColors.Green}★ {Helper.ChatColors.DarkRed}-----------------------------------------------------------------------");
                 Core.PlayerManager.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.Duel.Started", SelectedModeName.Name]}");
-                Core.PlayerManager.SendChat($" {Color.FromBuiltin(System.Drawing.Color.Green)}★ {Color.FromBuiltin(System.Drawing.Color.DarkRed)}-----------------------------------------------------------------------");
+                Core.PlayerManager.SendChat($"{Helper.ChatColors.Green}★ {Helper.ChatColors.DarkRed}-----------------------------------------------------------------------");
                 StartDuel(SelectedModeName.Name);
                 g_PrepDuel = false;
                 g_DuelStarted = true;
@@ -628,11 +635,11 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
         string[] Commands = GetDuelItem(DuelModeName).CMD.Split(",");
         
         g_DuelNoscope = GetDuelItem(DuelModeName).NoZoom;
-        g_DuelHSOnly = GetDuelItem(DuelModeName).Only_headshot;
+        g_DuelHSOnly = GetDuelItem(DuelModeName).OnlyHeadshot;
         g_DuelBullettracers = GetDuelItem(DuelModeName).BulletTracers;
         g_DuelDisableKnife = GetDuelItem(DuelModeName).DisableKnife;
         
-        var mp_death_drop_gun = Core.ConVar.Find<float>("mp_death_drop_gun");
+        var mp_death_drop_gun = Core.ConVar.Find<int>("mp_death_drop_gun");
         if (mp_death_drop_gun != null) mp_death_drop_gun_value = mp_death_drop_gun.Value; // Get Convar Int value
         if(mp_death_drop_gun_value != 0) Core.Engine.ExecuteCommand("mp_death_drop_gun 0");
         Core.Engine.ExecuteCommand("mp_ignore_round_win_conditions 0");
@@ -645,7 +652,9 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
         {
             player.PlayerPawn!.Health = GetDuelItem(DuelModeName).Health;
             player.PlayerPawn.VelocityModifier = GetDuelItem(DuelModeName).Speed;
-            player.PlayerPawn.GravityScale *= GetDuelItem(DuelModeName).Gravity;
+            player.PlayerPawn.ActualGravityScale *= GetDuelItem(DuelModeName).Gravity;
+            player.PlayerPawn.GravityScaleUpdated();
+            player.PlayerPawn.VelocityModifierUpdated();
             if(GetDuelItem(DuelModeName).Helmet < 1)player.PlayerPawn.ArmorValue = GetDuelItem(DuelModeName).Armor;
             else player.PlayerPawn.ItemServices!.GiveItem("item_assaultsuit");
             foreach(var weapon in weapons) // Give Each Weapon
@@ -733,10 +742,10 @@ public partial class SLAYER_Duel(ISwiftlyCore core) : BasePlugin(core)
             } 
             GiveBackSavedWeaponsToPlayers(duelist);
         }
-        Core.PlayerManager.SendChat($" {Color.FromBuiltin(System.Drawing.Color.Green)}★ {Color.FromBuiltin(System.Drawing.Color.DarkRed)}-----------------------------------------------------------------------");
+        Core.PlayerManager.SendChat($" {Helper.ChatColors.Green}★ {Helper.ChatColors.DarkRed}-----------------------------------------------------------------------");
         if(Winner != ""){Core.PlayerManager.SendChat($"{Localizer["Chat.Prefix"]}  {Localizer["Chat.Duel.EndWins", Winner]}");}
         else Core.PlayerManager.SendChat($"{Localizer["Chat.Prefix"]} {Localizer["Chat.Duel.EndDraw"]}");
-        Core.PlayerManager.SendChat($" {Color.FromBuiltin(System.Drawing.Color.Green)}★ {Color.FromBuiltin(System.Drawing.Color.DarkRed)}-----------------------------------------------------------------------");
+        Core.PlayerManager.SendChat($" {Helper.ChatColors.Green}★ {Helper.ChatColors.DarkRed}-----------------------------------------------------------------------");
 
         string[] Commands = GetDuelItem(SelectedDuelModeName).CMD_End.Split(",");
         if(mp_death_drop_gun_value != 0)Core.Engine.ExecuteCommand($"mp_death_drop_gun {mp_death_drop_gun_value}");

@@ -14,20 +14,24 @@ public partial class SLAYER_Duel : BasePlugin
         }
         return $"{Core.PluginPath}/Duel_TeleportPositions.json";
     }
-    private Vector? GetPositionFromFile(int TeamNum)
+    private (Vector?, QAngle?) GetPositionFromFile(int TeamNum)
     {
         var mapData = Duel_Positions[Core.Engine.GlobalVars.MapName]; // Get Current Map Teleport Positions
         if (TeamNum == 2 && mapData.ContainsKey("T_Pos") && mapData["T_Pos"] != "") // If player team is Terrorist then get the T_Pos from File
         {
-            string[] Positions = mapData["T_Pos"].Split(" "); // Split Coordinates with space " "
-            return new Vector(float.Parse(Positions[0]), float.Parse(Positions[1]), float.Parse(Positions[2])); // Return Coordinates in Vector
+            string[] Data = mapData["T_Pos"].Split(";"); // Seperate Position and Rotation
+            string[] Position = Data[0].Split(" "); // Split Coordinates with space " "
+            string[] Rotation = Data[1].Split(" "); // Split Rotation with space " "
+            return (new Vector(float.Parse(Position[0]), float.Parse(Position[1]), float.Parse(Position[2])), new QAngle(float.Parse(Rotation[0]), float.Parse(Rotation[1]), float.Parse(Rotation[2]))); // Return Coordinates in Vector
         }
         else if(TeamNum == 3 && mapData.ContainsKey("CT_Pos") && mapData["CT_Pos"] != "") // If player team is C-Terrorist then get the CT_Pos from File
         {
-            string[] Positions = mapData["CT_Pos"].Split(" "); // Split Coordinates with space " "
-            return new Vector(float.Parse(Positions[0]), float.Parse(Positions[1]), float.Parse(Positions[2])); // Return Coordinates in Vector
+            string[] Data = mapData["CT_Pos"].Split(";"); // Seperate Position and Rotation
+            string[] Position = Data[0].Split(" "); // Split Coordinates with space " "
+            string[] Rotation = Data[1].Split(" "); // Split Rotation with space " "
+            return (new Vector(float.Parse(Position[0]), float.Parse(Position[1]), float.Parse(Position[2])), new QAngle(float.Parse(Rotation[0]), float.Parse(Rotation[1]), float.Parse(Rotation[2]))); // Return Coordinates in Vector
         }
-        return null;
+        return (null, null);
     }
     private void LoadPositionsFromFile()
     {

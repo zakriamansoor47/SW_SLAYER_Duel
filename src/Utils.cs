@@ -137,7 +137,7 @@ public partial class SLAYER_Duel : BasePlugin
 		{
             if(player == null || !player.IsValid || player.Pawn.Value == null || player.PlayerPawn.Value == null || player.Pawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE)return; // If player is not Valid then return
             var TeleportPosition = GetPositionFromFile(player.TeamNum); // Get Teleport Position From JSON file
-            if(TeleportPosition != null)player.PlayerPawn.Value.Teleport(TeleportPosition, player.PlayerPawn.Value.AngVelocity, new Vector(0f, 0f, 0f)); // Teleport Player to That position
+            if(TeleportPosition.Item1 != null) player.PlayerPawn.Value.Teleport(TeleportPosition.Item1, TeleportPosition.Item2 ?? player.PlayerPawn.Value.AbsRotation, new Vector(0f, 0f, 0f)); // Teleport Player to That position
         }
         else return; // If Map not Exist in File then do nothing
     }

@@ -5,8 +5,8 @@
 </div>
 
 <p align="center">
-  <img src="https://img.shields.io/github/downloads/zakriamansoor47/SW_SLAYER_Duel/total" alt="Downloads">
-  <img src="https://img.shields.io/github/stars/zakriamansoor47/SW_SLAYER_Duel?style=flat&logo=github" alt="Stars">
+  <img src="https://img.shields.io/github/Downloads/zakriamansoor47/Swiftly_SLAYER_Duel/total" alt="Downloads">
+  <img src="https://img.shields.io/github/Stars/zakriamansoor47/Swiftly_SLAYER_Duel?style=flat&logo=github" alt="Stars">
 </p>
 
 # Accepting Paid Request! Discord: Slayer47#7002
@@ -76,7 +76,7 @@ This Plugin allows Players to do **1vs1 Duel**. This plugin has many features. T
 
 
 ## Configuration:
-```json
+```jsonc
 {
   "PluginEnabled": true,          		// Enable/Disable Plugin
   "Duel_ForceStart": false,       		// Force Start Duel? (true = Yes, false = Vote for Duel)
@@ -186,8 +186,7 @@ This Plugin allows Players to do **1vs1 Duel**. This plugin has many features. T
 		"DisableKnife": true,
 		"Name": "Grenade Only"
     }
-  ],
-  "ConfigVersion": 1
+  ]
 }
 ```
 
